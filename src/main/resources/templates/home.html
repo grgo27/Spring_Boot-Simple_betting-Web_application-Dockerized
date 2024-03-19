@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+                xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Betting application</title>
+    <link
+            rel="stylesheet"
+            href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+            integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+            crossorigin="anonymous"
+    />
+    <script
+            src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"
+    ></script>
+    <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"
+    ></script>
+    <script
+            src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"
+    ></script>
+    <script>
+        // Function to ensure only one checkbox per row can be checked
+        function handleCheckboxSelection(checkbox) {
+            var checkboxes = document.querySelectorAll('input[type="checkbox"].odd-checkbox');
+            checkboxes.forEach(function (currentCheckbox) {
+                // Check if the checkbox is in the same row and uncheck it if it's not the clicked checkbox
+                if (currentCheckbox !== checkbox && currentCheckbox.closest('tr') === checkbox.closest('tr')) {
+                    currentCheckbox.checked = false;
+                }
+            });
+        }
+    </script>
+
+</head>
+<body>
+<ul class="nav">
+    <li class="nav-item"><a class="nav-link" th:href="@{/}">Home</a></li>
+    <li class="nav-link" th:if="${#authorization.expression('isAuthenticated()')}"><a th:href="@{/logout}"> Log Out</a></li>  <!-- ODE SAN STAVIJA AKO JE LOGIRAN DA SE VIDI OVAJ LINK-->
+    <li class="nav-link" th:unless="${#authorization.expression('isAuthenticated()')}"><a th:href="@{/login}">Log In</a></li>  <!-- ODE SAN STAVIJA AKO NIJE LOGIRAN DA SE VIDI OVAJ LINK, ZNACI KAD SE ULOGIRA NECE SE VIDIT LOGIN I REGISTER STA JE LOGICNO-->
+    <li class="nav-link" th:unless="${#authorization.expression('isAuthenticated()')}"><a th:href="@{/register}">Register</a></li>
+    <li class="nav-link" th:if="${#authorization.expression('isAuthenticated()')}"><a th:href="@{/showBets}">Bets</a></li>
+    <li class="nav-link" th:if="${#authorization.expression('isAuthenticated()')}"><a th:href="@{/account(username=${session.testUser.username})}">Account</a></li>
+
+</ul>
+<br>
+<h3>Welcome to My Simple Betting Application</h3>
+<br>
+<p th:unless="${#authorization.expression('isAuthenticated()')}">You need to login to bet online</p>
+
+<div th:if="${session.testUser}" > <!-- MOGU KORISTIT I OVO <div th:if="${#authorization.expression('isAuthenticated()')}" > i onda nisan ovisan o tome da li postoji sesija ili ne, nego provjeravan da li je user authenticated-->
+    <p>HI: <span th:text="${session.testUser.firstName}"/></p> <!-- AKO KORISTIN OVI GORI DIO U KOMENTARU ONDA ISTO KORISTIN OVU LINIJU SAMO DIREKTNO POZIVAN SESSION A NE PROVJERAVAN POSTOJI LI -->
+</div>
+<br>
+<!-- UBACIJA SAN DODATAK ZA LOGOUT U SECURITY FILTER CHAINU PA NE MORAN KORISTIT FORMU
+<form action="#" th:action="@{/logout}" method="POST">
+    <input type="submit" value="Logout">
+</form> -->
+<h4>Todays offer</h4>
+<div th:unless="${#authorization.expression('isAuthenticated()')}" class="container">
+<table class="table table-bordered table-striped">
+    <thead class="table-dark"> <!-- thead je tag za glavu tablice-->
+    <tr> <!-- tr je red tablice-->
+        <th>Home Team</th> <!-- th je celija u redu ali za imena stupaca-->
+        <th>Away Team</th>
+        <th>1</th>
+        <th>X</th>
+        <th>2</th>
+        <th>1X</th>
+        <th>X2</th>
+    </tr>
+    </thead>
+    <tbody> <!-- body je tag za tijelo tablice-->
+    <tr th:each="tempGame : ${games}"> <!-- loop over the list of employees and tempEmployee is the temp loop variable, odnosno single employee objekt -->
+    <td th:text="${tempGame.homeTeam}"></td> <!-- popunjavamo celije u redu tako da imamo game objekt i dohvacamo fieldove tog objekta-->
+    <td th:text="${tempGame.awayTeam}"></td>
+    <td th:text="${tempGame.homeTeamWinOdds}"></td>
+    <td th:text="${tempGame.drawOdds}"></td>
+    <td th:text="${tempGame.awayTeamWinOdds}"></td>
+    <td th:text="${tempGame.homeTeamWinDrawOdds}"></td>
+    <td th:text="${tempGame.awayTeamWinDrawOdds}"></td>
+    </tr>
+    </tbody>
+</table>
+</div>
+<div th:if="${#authorization.expression('isAuthenticated()')}" class="container">
+    <form action="#" th:action="@{/processBet}"  th:object="${betDTO}" method="POST">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark"> <!-- thead je tag za glavu tablice-->
+            <tr> <!-- tr je red tablice-->
+                <th>Home Team</th> <!-- th je celija u redu ali za imena stupaca-->
+                <th>Away Team</th>
+                <th>1</th>
+                <th>X</th>
+                <th>2</th>
+                <th>1X</th>
+                <th>X2</th>
+            </tr>
+            </thead>
+
+            <tbody> <!-- body je tag za tijelo tablice-->
+            <tr th:each="tempGame, gameIndex : ${games}"> <!-- loop over the list of employees and tempEmployee is the temp loop variable, odnosno single employee objekt -->
+                <td th:text="${tempGame.homeTeam}"></td> <!-- popunjavamo celije u redu tako da imamo employee objekt i dohvacamo fieldove tog objekta-->
+                <td th:text="${tempGame.awayTeam}"></td>
+                <td> <input type="checkbox" th:field="*{selectedOddsAndIds}" class="odd-checkbox" name="selectedOddsAndIds" th:value="${tempGame.id + ':' + tempGame.homeTeamWinOdds + ':1'}" th:text="' '+${tempGame.homeTeamWinOdds}" onclick="handleCheckboxSelection(this)"/></td> <!-- value koji je kombinacija game_id, selected_odd i osnovne ponude povezujemo sa fieldon selectedOddsAndIds od betDto objekta koji je tipa string -->
+                <td><input type="checkbox" th:field="*{selectedOddsAndIds}" class="odd-checkbox" name="selectedOddsAndIds" th:value="${tempGame.id + ':' + tempGame.drawOdds + ':X'}" th:text="' '+${tempGame.drawOdds}" onclick="handleCheckboxSelection(this)"/></td>
+                <td><input type="checkbox" th:field="*{selectedOddsAndIds}" class="odd-checkbox" name="selectedOddsAndIds" th:value="${tempGame.id + ':' + tempGame.awayTeamWinOdds + ':2'}" th:text="' '+${tempGame.awayTeamWinOdds}" onclick="handleCheckboxSelection(this)"/></td>
+                <td><input type="checkbox" th:field="*{selectedOddsAndIds}" class="odd-checkbox" name="selectedOddsAndIds" th:value="${tempGame.id + ':' + tempGame.homeTeamWinDrawOdds + ':1X'}" th:text="' '+${tempGame.homeTeamWinDrawOdds}" onclick="handleCheckboxSelection(this)" /></td>
+                <td><input type="checkbox" th:field="*{selectedOddsAndIds}" class="odd-checkbox" name="selectedOddsAndIds" th:value="${tempGame.id + ':' + tempGame.awayTeamWinDrawOdds + ':X2'}" th:text="' '+${tempGame.awayTeamWinDrawOdds}" onclick="handleCheckboxSelection(this)"/></td>
+
+            </tr>
+            </tbody>
+        </table>
+        <p>Amount for bet: <input type="number" th:field="*{amount}" name="amount" >  <input type="submit" value="Bet"></p>
+        <div th:if="${errorMessage}" >
+            <p th:text="${errorMessage}"></p>
+        </div>
+    </form>
+
+</div>
+
+
+
+</body>
+</html>

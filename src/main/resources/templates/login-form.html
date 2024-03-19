@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Betting application</title>
+    <link
+            rel="stylesheet"
+            href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+            integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+            crossorigin="anonymous"
+    />
+    <script
+            src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"
+    ></script>
+    <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"
+    ></script>
+    <script
+            src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"
+    ></script>
+</head>
+<body>
+<ul class="nav">
+    <li class="nav-item"><a class="nav-link" th:href="@{/}">Home</a></li>
+    <li class="nav-link" th:if="${#authorization.expression('isAuthenticated()')}"><a th:href="@{/logout}"> Log Out</a></li>  <!-- ODE SAN STAVIJA AKO JE LOGIRAN DA SE VIDI OVAJ LINK-->
+    <li class="nav-link" th:unless="${#authorization.expression('isAuthenticated()')}"><a th:href="@{/login}">Log In</a></li>  <!-- ODE SAN STAVIJA AKO NIJE LOGIRAN DA SE VIDI OVAJ LINK, ZNACI KAD SE ULOGIRA NECE SE VIDIT LOGIN I REGISTER STA JE LOGICNO-->
+    <li class="nav-link" th:unless="${#authorization.expression('isAuthenticated()')}"><a th:href="@{/register}">Register</a></li>
+
+</ul>
+<br>
+<h3>Login Form</h3>
+<br>
+<br>
+<br>
+<form action="#" th:action="@{/authenticateTheUser}" method="POST">
+    <!-- FOR OUR CUSTOM LOGIN PAGE WE NEED LOGIC TO HANDLE LOGIN ERROR MESSAGES
+     WHEN LOGIN FAILS BY DEFAULT SPRING SECURITY WILL SEND USER BACK ON LOGIN PAGE AND APPEND ERROR PARAMETERR ?error to link-->
+    <!-- Check for login error-->
+    <div th:if="${param.error}"> <!-- ovaj div ce se pojavit samo ako immaom error kao parametar-->
+        <i>Sorry! You entered invalid username/password.</i>
+    </div>
+    <!--  When a logout is processed, by default Spring Security will send user back to your login page and append a logout parameter: ?logout, ja san prominija da kad se odlogiramo da nas prebaci na home page tako da sad ova poruka nece bit ode-->
+    <div th:if="${param.logout}" > <!-- ovaj div ce se pojavit samo ako immaom logout kao parametar-->
+        <i>You have been logged out.</i>
+    </div>
+    <p>Username: <input type="text" name="username"></p>
+    <p>Password: <input type="password" name="password"></p>
+    <input type="submit" value="Login" />
+</form>
+
+</body>
+</html>
